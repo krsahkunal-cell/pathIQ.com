@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PathIQ | Footpath Intelligence</title>
+    <meta name="description" content="AI-powered footpath detection and accessibility mapping.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <a class="brand" href="#">
+        <span class="brand-icon">P</span>
+        <span>Path<span class="brand-blue">IQ</span></span>
+    </a>
+    <nav>
+        <a href="#detection">AI Detection</a>
+        <a href="#mapping">Satellite Mapping</a>
+        <a href="#saved">Saved Areas</a>
+    </nav>
+    <span class="status-pill"><span class="status-dot"></span> AI System</span>
+</header>
+
+<main>
+    <section class="hero">
+        <div class="hero-content">
+            <span class="eyebrow">FOOTPATH INTELLIGENCE PLATFORM</span>
+            <h1>Make every footpath<br><span>accessible for everyone.</span></h1>
+            <p>Upload a footpath image, detect obstacles with AI, analyse accessibility and map problem areas using satellite imagery.</p>
+            <a class="primary-btn" href="#detection">Start Analysis <span>→</span></a>
+        </div>
+        <div class="hero-visual">
+            <div class="visual-card">
+                <div class="visual-top"><span>PATHIQ AI</span><span class="live-dot">● LIVE</span></div>
+                <div class="visual-number">98.4%</div>
+                <div class="visual-label">Accessibility intelligence</div>
+                <div class="visual-line"><span></span></div>
+                <div class="visual-bottom"><span>Detection</span><span>Mapping</span><span>Analysis</span></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="detection">
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">01 / COMPUTER VISION</span>
+                <h2>AI Footpath Detection</h2>
+                <p>Upload an image and let your trained YOLOv8 model analyse it.</p>
+            </div>
+            <span class="step-tag">STEP 01</span>
+        </div>
+
+        <div class="detection-grid">
+            <div class="panel upload-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h3>Upload footpath image</h3>
+                        <p>JPG, PNG or WEBP · Maximum 10 MB</p>
+                    </div>
+                    <span class="panel-icon">↑</span>
+                </div>
+
+                <label class="upload-zone" id="uploadZone" for="imageInput">
+                    <input type="file" id="imageInput" accept="image/jpeg,image/png,image/webp" hidden>
+                    <div id="uploadPlaceholder">
+                        <div class="upload-icon">↑</div>
+                        <h4>Drop your image here</h4>
+                        <p>or <span>browse files</span> from your computer</p>
+                    </div>
+                    <img id="previewImage" class="preview-image hidden" alt="Selected footpath image">
+                </label>
+
+                <div class="file-row hidden" id="fileInfo">
+                    <span class="file-icon">IMG</span>
+                    <div class="file-details">
+                        <strong id="fileName">image.jpg</strong>
+                        <small id="fileSize"></small>
+                    </div>
+                    <button class="text-button" id="removeImageBtn" type="button">Remove</button>
+                </div>
+
+                <div class="confidence-control">
+                    <div class="control-label">
+                        <label for="confidenceSlider">Detection confidence</label>
+                        <strong id="confidenceValue">25%</strong>
+                    </div>
+                    <input type="range" id="confidenceSlider" min="5" max="95" value="25" step="5">
+                    <div class="range-labels"><span>More detections</span><span>Higher certainty</span></div>
+                </div>
+
+                <button class="primary-btn full-btn" id="analyzeBtn" type="button" disabled>
+                    <span id="analyzeBtnText">Analyse Image with AI</span>
+                    <span>→</span>
+                </button>
+                <p class="message" id="detectionMessage" role="status"></p>
+            </div>
+
+            <div class="panel result-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h3>AI Analysis Results</h3>
+                        <p>Detection output from your YOLOv8 model</p>
+                    </div>
+                    <span class="result-tag" id="resultStatus">Waiting</span>
+                </div>
+
+                <div class="result-image-wrap">
+                    <div id="resultPlaceholder" class="result-placeholder">
+                        <div class="result-placeholder-icon">◎</div>
+                        <strong>Analysis preview</strong>
+                        <span>Your annotated image will appear here</span>
+                    </div>
+                    <img id="resultImage" class="result-image hidden" alt="AI detection result">
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <span>Detection count</span>
+                        <strong id="detectionCount">—</strong>
+                    </div>
+                    <div class="metric-card">
+                        <span>Average confidence</span>
+                        <strong id="averageConfidence">—</strong>
+                    </div>
+                    <div class="metric-card">
+                        <span>Image resolution</span>
+                        <strong id="imageResolution">—</strong>
+                    </div>
+                </div>
+
+                <div class="report-box">
+                    <div class="report-title"><span>✦</span> Usability Analysis</div>
+                    <div id="usabilityReport" class="report-content">
+                        Upload an image and run AI analysis to view the footpath usability report.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel detections-panel">
+            <div class="panel-heading">
+                <div>
+                    <h3>Detected Objects</h3>
+                    <p>Objects and confidence scores identified by the model</p>
+                </div>
+                <span class="count-tag" id="tableCount">0 objects</span>
+            </div>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                    <tr><th>#</th><th>Detected class</th><th>Confidence</th><th>Score</th></tr>
+                    </thead>
+                    <tbody id="detectionsTable">
+                    <tr><td colspan="4" class="empty-cell">No detections yet. Upload an image to begin.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="section mapping-section" id="mapping">
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">02 / GEOGRAPHIC INTELLIGENCE</span>
+                <h2>Satellite Area Mapping</h2>
+                <p>View real-world satellite imagery and mark footpath areas, routes and accessibility issues.</p>
+            </div>
+            <span class="step-tag">STEP 02</span>
+        </div>
+
+        <div class="map-toolbar panel">
+            <div class="toolbar-group">
+                <label for="areaSelect">Map location</label>
+                <select id="areaSelect">
+                    <option value="18.5204,73.8567">Pune, India</option>
+                    <option value="19.0760,72.8777">Mumbai, India</option>
+                    <option value="28.6139,77.2090">New Delhi, India</option>
+                    <option value="12.9716,77.5946">Bengaluru, India</option>
+                    <option value="17.3850,78.4867">Hyderabad, India</option>
+                    <option value="13.0827,80.2707">Chennai, India</option>
+                </select>
+            </div>
+            <button class="secondary-btn" id="gpsBtn" type="button">◎ My Location</button>
+            <span class="satellite-label"><span></span> SATELLITE VIEW</span>
+        </div>
+
+        <div class="map-layout">
+            <div class="map-container">
+                <div id="map"></div>
+                <div class="map-legend">
+                    <span><i class="legend-good"></i> Good</span>
+                    <span><i class="legend-attention"></i> Needs attention</span>
+                    <span><i class="legend-blocked"></i> Blocked</span>
+                </div>
+            </div>
+
+            <aside class="map-sidebar">
+                <div class="panel">
+                    <h3>Mapping tools</h3>
+                    <p class="sidebar-description">Choose what you want to mark on the map.</p>
+
+                    <div class="tool-block">
+                        <label for="pathName">Area / path name</label>
+                        <input type="text" id="pathName" placeholder="e.g. Main Street Footpath">
+                    </div>
+
+                    <div class="tool-block">
+                        <label for="pathCondition">Accessibility condition</label>
+                        <select id="pathCondition">
+                            <option value="Good">Good</option>
+                            <option value="Needs Attention">Needs Attention</option>
+                            <option value="Blocked">Blocked</option>
+                            <option value="Not Accessible">Not Accessible</option>
+                        </select>
+                    </div>
+
+                    <div class="tool-divider"></div>
+
+                    <button class="tool-btn" id="drawAreaBtn" type="button">
+                        <span class="tool-symbol">⬡</span>
+                        <span><strong>Draw Area</strong><small>Mark a footpath area / zone</small></span>
+                    </button>
+                    <button class="tool-btn" id="drawPathBtn" type="button">
+                        <span class="tool-symbol">⌁</span>
+                        <span><strong>Draw Path</strong><small>Mark a walking route</small></span>
+                    </button>
+
+                    <div class="tool-block marker-block">
+                        <label for="markerType">Marker type</label>
+                        <select id="markerType">
+                            <option value="Obstacle">Obstacle</option>
+                            <option value="Ramp">Ramp</option>
+                            <option value="Crossing">Crossing</option>
+                            <option value="Footpath issue">Footpath issue</option>
+                        </select>
+                        <button class="secondary-btn full-btn" id="markerModeBtn" type="button">＋ Add map marker</button>
+                    </div>
+
+                    <div class="tool-divider"></div>
+                    <div class="pending-info">
+                        <strong>Unsaved mapping</strong>
+                        <span id="pendingCount">0 items drawn</span>
+                    </div>
+                    <button class="primary-btn full-btn" id="saveMappingBtn" type="button">Save Mapping</button>
+                    <button class="clear-btn full-btn" id="clearDrawingBtn" type="button">Clear unsaved drawings</button>
+                    <p class="message" id="mapMessage" role="status"></p>
+                </div>
+            </aside>
+        </div>
+    </section>
+
+    <section class="section" id="saved">
+        <div class="section-heading">
+            <div>
+                <span class="eyebrow">03 / YOUR DATA</span>
+                <h2>Saved Footpath Mappings</h2>
+                <p>Review the accessibility areas saved in your PathIQ database.</p>
+            </div>
+            <button class="secondary-btn" id="refreshSavedBtn" type="button">↻ Refresh</button>
+        </div>
+
+        <div class="saved-stats">
+            <div class="saved-stat"><span>Total mappings</span><strong id="totalPaths">0</strong></div>
+            <div class="saved-stat"><span>Good</span><strong id="goodPaths">0</strong></div>
+            <div class="saved-stat"><span>Needs attention</span><strong id="attentionPaths">0</strong></div>
+            <div class="saved-stat"><span>Blocked / inaccessible</span><strong id="blockedPaths">0</strong></div>
+        </div>
+
+        <div class="panel saved-panel">
+            <div class="saved-list" id="savedPathsList">
+                <div class="empty-state">No saved mappings yet. Draw an area or path and save it.</div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="brand"><span class="brand-icon">P</span><span>Path<span class="brand-blue">IQ</span></span></div>
+    <p>AI-powered footpath intelligence for more accessible cities.</p>
+    <small>© 2026 PathIQ. Built for better urban accessibility.</small>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="mapping.js"></script>
+</body>
+</html>
