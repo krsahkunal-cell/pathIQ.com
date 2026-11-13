@@ -1,0 +1,1 @@
+Copy your trained compatible YOLO .pt weights here and name it best.pt.
